@@ -11,7 +11,7 @@ node automation/search.mjs --headed --bot-subreddit mybothistoriador_dev --term 
 
 O script atual usa modo invisível. Para autenticar, altere temporariamente `headless: true` para `headless: false` em `automation/search.mjs`, execute uma vez e restaure depois.
 
-O script usa o Chrome normal em `/usr/bin/google-chrome`, evitando o bloqueio do Google ao Chrome for Testing. Se o Chrome estiver em outro local, defina `BROWSER_PATH`.
+Por padrão, o script usa o Chromium instalado pelo Playwright em um perfil separado, evitando conflitos com o Chrome do sistema/WSL. Se precisar usar outro navegador, defina `BROWSER_PATH`.
 
 Uso normal:
 

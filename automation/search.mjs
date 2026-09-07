@@ -20,8 +20,9 @@ if (!term || !botSubreddit) {
 }
 
 const headed = process.argv.includes('--headed')
-const executablePath = process.env.BROWSER_PATH || '/usr/bin/google-chrome'
-const browser = await chromium.launchPersistentContext('.automation-profile', {headless: !headed, executablePath})
+const launchOptions = {headless: !headed}
+if (process.env.BROWSER_PATH) launchOptions.executablePath = process.env.BROWSER_PATH
+const browser = await chromium.launchPersistentContext('.automation-profile', launchOptions)
 const page = await browser.newPage()
 async function findFrameWith(selector, timeout = 60000) {
   const deadline = Date.now() + timeout
