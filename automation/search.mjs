@@ -23,6 +23,16 @@ const headed = process.argv.includes('--headed')
 const executablePath = process.env.BROWSER_PATH || '/usr/bin/google-chrome'
 const browser = await chromium.launchPersistentContext('.automation-profile', {headless: !headed, executablePath})
 const page = await browser.newPage()
+async function findFrameWith(selector, timeout = 60000) {
+  const deadline = Date.now() + timeout
+  while (Date.now() < deadline) {
+    for (const frame of page.frames()) {
+      if (await frame.locator(selector).count().catch(() => 0)) return frame
+    }
+    await page.waitForTimeout(500)
+  }
+  throw new Error(`Não encontrei ${selector} no post do Devvit.`)
+}
 try {
   await page.goto(`https://www.reddit.com/r/${botSubreddit}/`, {waitUntil: 'domcontentloaded', timeout: 60000})
   if (headed && page.url().includes('logging_in=true')) {
@@ -36,17 +46,15 @@ try {
   await botPost.waitFor({state: 'visible', timeout: 60000})
   await botPost.click()
   await page.waitForLoadState('domcontentloaded')
-  const startButton = page.locator('#start-btn')
-  if (await startButton.isVisible({timeout: 10000}).catch(() => false)) {
-    await startButton.click()
-  }
-  await page.locator('#search-input').waitFor({state: 'visible', timeout: 60000})
-  await page.locator('#search-input').fill(term)
-  await page.locator('#subreddit-select').selectOption(subreddit)
-  await page.locator('#search-form').evaluate(form => form.requestSubmit())
-  await page.locator('#result-count').waitFor({state: 'visible', timeout: 60000})
-  await page.waitForFunction(() => !document.querySelector('#result-count')?.textContent?.includes('pesquisando'))
-  const stories = await page.locator('.story-card').evaluateAll(cards => cards.map(card => ({
+  const appFrame = await findFrameWith('#start-btn')
+  await appFrame.locator('#start-btn').click()
+  await appFrame.locator('#search-input').waitFor({state: 'visible', timeout: 60000})
+  await appFrame.locator('#search-input').fill(term)
+  await appFrame.locator('#subreddit-select').selectOption(subreddit)
+  await appFrame.locator('#search-form').evaluate(form => form.requestSubmit())
+  await appFrame.locator('#result-count').waitFor({state: 'visible', timeout: 60000})
+  await appFrame.waitForFunction(() => !document.querySelector('#result-count')?.textContent?.includes('pesquisando'))
+  const stories = await appFrame.locator('.story-card').evaluateAll(cards => cards.map(card => ({
     subreddit: card.querySelector('.card-meta span')?.textContent?.trim() || '',
     title: card.querySelector('h3')?.textContent?.trim() || '',
     excerpt: card.querySelector('p')?.textContent?.trim() || '',
