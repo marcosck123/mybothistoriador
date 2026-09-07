@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Historiador</title><link rel="modulepreload" href="game.js"><link rel="stylesheet" href="ui-style.css"></head>
+  <body><main class="shell">
+    <header class="topbar"><a class="brand" href="#"><span class="brand-mark">H</span><span>historiador</span></a><span class="status"><i></i> conectado ao Reddit</span></header>
+    <section class="hero"><p class="eyebrow">arquivo de histórias brasileiras</p><h1>Encontre a próxima<br><em>boa história.</em></h1><p class="intro">Pesquise relatos publicados no Reddit e organize as descobertas em um só lugar.</p><form class="search-panel" id="search-form"><label for="search-input">O que você quer encontrar?</label><div class="search-row"><input id="search-input" type="search" placeholder="ex.: experiência sobrenatural" autocomplete="off"><select id="subreddit-select" aria-label="Escolha o subreddit"><option value="historias">r/historias</option><option value="desabafos">r/desabafos</option><option value="conversas">r/conversas</option></select><button type="submit"><span>Pesquisar</span><b>↗</b></button></div><p class="hint">Os resultados são buscados diretamente no Reddit.</p></form></section>
+    <section class="results-section"><div class="section-heading"><div><p class="eyebrow">resultados reais</p><h2>Histórias encontradas</h2></div><span class="result-count" id="result-count">aguardando</span></div><div class="results" id="results" aria-live="polite"></div></section>
+    <footer><span>mybothistoriador</span><span>dados fornecidos pelo Reddit</span></footer>
+  </main><script src="game.js" type="module"></script></body>
+</html>

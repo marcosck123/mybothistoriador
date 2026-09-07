@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Historiador — busca no Reddit</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Historiador início">
+          <span class="brand-mark">H</span>
+          <span>historiador</span>
+        </a>
+        <span class="status"><i></i> modo de prévia</span>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">arquivo de histórias brasileiras</p>
+        <h1 id="page-title">Encontre a próxima<br><em>boa história.</em></h1>
+        <p class="intro">Pesquise relatos publicados no Reddit e organize as descobertas em um só lugar.</p>
+
+        <form class="search-panel" id="search-form">
+          <label for="search-input">O que você quer encontrar?</label>
+          <div class="search-row">
+            <input id="search-input" type="search" placeholder="ex.: experiência sobrenatural" autocomplete="off">
+            <select id="subreddit-select" aria-label="Escolha o subreddit">
+              <option value="historias">r/historias</option>
+              <option value="desabafos">r/desabafos</option>
+              <option value="conversas">r/conversas</option>
+            </select>
+            <button type="submit"><span>Pesquisar</span><b>↗</b></button>
+          </div>
+          <p class="hint">A busca real será conectada ao Reddit na próxima etapa.</p>
+        </form>
+      </section>
+
+      <section class="results-section" aria-labelledby="results-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">amostra editorial</p>
+            <h2 id="results-title">Histórias recentes</h2>
+          </div>
+          <span class="result-count" id="result-count">03 resultados</span>
+        </div>
+        <div class="results" id="results" aria-live="polite"></div>
+      </section>
+
+      <footer><span>mybothistoriador</span><span>feito para pesquisar melhor</span></footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
