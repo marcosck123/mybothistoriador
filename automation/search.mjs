@@ -67,6 +67,11 @@ try {
     author: card.querySelector('.author')?.textContent?.trim() || '',
     url: card.querySelector('.author')?.getAttribute('href') || '',
   })))
+  if (!stories.length) {
+    const status = await appFrame.locator('#result-count').textContent().catch(() => '')
+    const message = await appFrame.locator('.empty-state').textContent().catch(() => '')
+    console.log(`Nenhum card retornado. status="${status?.trim() || ''}" mensagem="${message?.trim() || ''}"`)
+  }
   const result = {term, subreddit: `r/${subreddit}`, collectedAt: new Date().toISOString(), stories}
   await fs.writeFile(output, `${JSON.stringify(result, null, 2)}\n`)
   console.log(`Pesquisa concluída: ${stories.length} história(s) salvas em ${output}`)
