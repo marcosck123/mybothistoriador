@@ -6,6 +6,9 @@ const parts = document.querySelector('#parts')
 const duration = document.querySelector('#duration')
 const clipMeta = document.querySelector('#clip-meta')
 const videoMode = document.querySelector('#video-mode')
+const creationMode = document.querySelector('#creation-mode')
+const modeHint = document.querySelector('#mode-hint')
+const generateLabel = generate.querySelector('span')
 const generate = document.querySelector('#generate')
 const previewVideo = document.querySelector('#preview-video')
 const previewText = document.querySelector('#preview-text')
@@ -36,6 +39,7 @@ storyFile.addEventListener('change', async () => {
 })
 
 storySelect.addEventListener('change', updateStory)
+creationMode.addEventListener('change', updateCreationMode)
 for (const field of [theme, parts, duration]) field.addEventListener('input', updateReady)
 videoFile.addEventListener('change', () => {
   const files = [...videoFile.files]
@@ -74,9 +78,21 @@ for (const field of [editTitle, editText, editAuthor]) field.addEventListener('i
 
 function updateReady() { generate.disabled = !stories.length || !selectedVideo }
 
+function updateCreationMode() {
+  const automatic = creationMode.value === 'automatic'
+  document.querySelectorAll('.automatic-only').forEach(element => { element.hidden = !automatic })
+  document.querySelectorAll('.manual-only').forEach(element => { element.hidden = automatic })
+  generateLabel.textContent = automatic ? 'Criar tudo automaticamente' : 'Montar vídeo escolhido'
+  modeHint.textContent = automatic
+    ? 'O sistema sorteia a história, divide o texto e prepara todas as partes.'
+    : 'Escolha a história, o título e o vídeo. Você revisa antes de montar.'
+}
+
 generate.addEventListener('click', async () => {
   generate.disabled = true
-  const selected = chooseStory()
+  const selected = creationMode.value === 'automatic'
+    ? chooseStory()
+    : { story: stories[Number(storySelect.value)], index: Number(storySelect.value) }
   if (!selected) {
     status.textContent = 'Nenhuma história combina com o tema informado.'
     generate.disabled = false
@@ -139,3 +155,5 @@ function formatSeconds(value) {
   const seconds = Math.floor(value % 60).toString().padStart(2, '0')
   return `${minutes}:${seconds}`
 }
+
+updateCreationMode()
