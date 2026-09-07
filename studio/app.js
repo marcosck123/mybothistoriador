@@ -1,7 +1,4 @@
-const storyLibrary = document.querySelector('#story-library')
 const storySelect = document.querySelector('#story-select')
-const videoFile = document.querySelector('#video-file')
-const videoLibrary = document.querySelector('#video-library')
 const theme = document.querySelector('#theme')
 const parts = document.querySelector('#parts')
 const duration = document.querySelector('#duration')
@@ -28,7 +25,29 @@ let selectedVideo = false
 let videoDuration = 0
 let selectedVideos = []
 
-storyLibrary.addEventListener('change', async () => loadStoryFiles([...storyLibrary.files]))
+async function loadRemoteLibrary() {
+  try {
+    const index = await fetch('/api/library').then(response => response.json())
+    for (const path of index.stories) {
+      const data = await fetch(path).then(response => response.json())
+      stories.push(...(data.stories || (Array.isArray(data) ? data : [data])))
+    }
+    storySelect.innerHTML = stories.map((story, index) => `<option value="${index}">${index + 1}. ${story.title || 'História sem título'}</option>`).join('')
+    storySelect.disabled = !stories.length
+    document.querySelector('#story-meta').textContent = `${stories.length} história(s) carregada(s) automaticamente`
+    selectedVideos = index.videos
+    selectedVideo = selectedVideos.length > 0
+    document.querySelector('#video-meta').textContent = `${selectedVideos.length} vídeo(s) carregado(s) automaticamente`
+    if (selectedVideo) {
+      previewVideo.src = selectedVideos[0]
+      previewVideo.play().catch(() => {})
+    }
+    updateStory()
+  } catch (error) {
+    status.textContent = 'Não foi possível ler a biblioteca local.'
+    console.error('Falha ao carregar biblioteca:', error)
+  }
+}
 
 async function loadStoryFiles(files) {
   if (!files.length) return
@@ -39,40 +58,13 @@ async function loadStoryFiles(files) {
   }
   storySelect.innerHTML = stories.map((story, index) => `<option value="${index}">${index + 1}. ${story.title || 'História sem título'}</option>`).join('')
   storySelect.disabled = false
-  document.querySelector('#story-meta').textContent = `${stories.length} história(s) carregada(s)`
+  document.querySelector('#story-meta').textContent = `${stories.length} história(s) carregada(s) automaticamente`
   updateStory()
 }
 
 storySelect.addEventListener('change', updateStory)
 creationMode.addEventListener('change', updateCreationMode)
 for (const field of [theme, parts, duration]) field.addEventListener('input', updateReady)
-videoFile.addEventListener('change', () => {
-  const files = [...videoFile.files]
-  const file = files[0]
-  if (!file) return
-  selectedVideos = files
-  selectedVideo = true
-  previewVideo.src = URL.createObjectURL(file)
-  previewVideo.addEventListener('loadedmetadata', () => {
-    videoDuration = previewVideo.duration
-    document.querySelector('#video-meta').textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB · ${formatSeconds(videoDuration)} · vídeo local`
-  }, { once: true })
-  previewVideo.play().catch(() => {})
-  document.querySelector('#video-file-label').textContent = files.length > 1 ? `${files.length} vídeos selecionados` : file.name
-  document.querySelector('#video-meta').textContent = `${files.map(item => `${(item.size / 1024 / 1024).toFixed(1)} MB`).join(' · ')} · vídeo local`
-  updateReady()
-})
-videoLibrary.addEventListener('change', () => {
-  const files = [...videoLibrary.files].filter(file => file.type.startsWith('video/'))
-  if (!files.length) return
-  selectedVideos = files
-  selectedVideo = true
-  const file = files[0]
-  previewVideo.src = URL.createObjectURL(file)
-  previewVideo.play().catch(() => {})
-  document.querySelector('#video-meta').textContent = `${files.length} vídeo(s) na biblioteca`
-  updateReady()
-})
 speed.addEventListener('input', () => { speedValue.textContent = `${Number(speed.value).toFixed(2)}×` })
 
 function updateStory() {
@@ -133,7 +125,7 @@ generate.addEventListener('click', async () => {
   const maxStart = Math.max(0, videoDuration - secondsPerPart)
   const start = manual ? 0 : Math.random() * maxStart
   if (manualVideo && previewVideo.src) {
-    previewVideo.src = URL.createObjectURL(manualVideo)
+    previewVideo.src = typeof manualVideo === 'string' ? manualVideo : URL.createObjectURL(manualVideo)
     previewVideo.currentTime = 0
   }
   previewVideo.currentTime = start
@@ -173,3 +165,4 @@ function formatSeconds(value) {
 }
 
 updateCreationMode()
+loadRemoteLibrary()
