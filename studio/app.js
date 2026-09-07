@@ -176,8 +176,6 @@ generate.addEventListener('click', async () => {
   generate.disabled = true
   if (creationMode.value === 'automatic' && !stories.length) {
     status.textContent = 'Nenhuma história disponível. Execute o script de histórias primeiro.'
-    storyScriptModal.hidden = false
-    scriptTerm.focus()
     generate.disabled = false
     return
   }
