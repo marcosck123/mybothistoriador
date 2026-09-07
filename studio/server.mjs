@@ -39,6 +39,7 @@ const server = createServer(async (request, response) => {
       for await (const chunk of request) chunks.push(chunk)
       const body = JSON.parse(Buffer.concat(chunks).toString() || '{}')
       const term = String(body.term || '').trim()
+      const limit = Math.min(50, Math.max(1, Number(body.limit) || 10))
       if (!term) {
         response.writeHead(400, { 'content-type': 'application/json' })
         response.end(JSON.stringify({ error: 'Informe um tema.' }))
@@ -50,7 +51,7 @@ const server = createServer(async (request, response) => {
       const output = join(directory, `historias-${Date.now()}.json`)
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       jobs.set(id, { id, term, status: 'running', output: relative(root, output), startedAt: new Date().toISOString() })
-      const child = spawn(process.execPath, ['automation/search.mjs', '--bot-subreddit', botSubreddit, '--term', term, '--subreddit', 'historias', '--output', output], { cwd: root, detached: true, stdio: 'ignore' })
+      const child = spawn(process.execPath, ['automation/search.mjs', '--bot-subreddit', botSubreddit, '--term', term, '--limit', String(limit), '--subreddit', 'historias', '--output', output], { cwd: root, detached: true, stdio: 'ignore' })
       child.once('close', code => {
         const job = jobs.get(id)
         if (!job) return
@@ -60,7 +61,7 @@ const server = createServer(async (request, response) => {
       })
       child.unref()
       response.writeHead(202, { 'content-type': 'application/json' })
-      response.end(JSON.stringify({ started: true, jobId: id, term, output: relative(root, output) }))
+      response.end(JSON.stringify({ started: true, jobId: id, term, limit, output: relative(root, output) }))
       return
     }
     if (url.pathname.startsWith('/api/story-script/') && request.method === 'GET') {

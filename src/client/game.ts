@@ -5,6 +5,7 @@ const input = document.querySelector('#search-input') as HTMLInputElement
 const subreddit = document.querySelector(
   '#subreddit-select',
 ) as HTMLSelectElement
+const storyLimit = document.querySelector('#story-limit') as HTMLInputElement
 const results = document.querySelector('#results') as HTMLDivElement
 const count = document.querySelector('#result-count') as HTMLSpanElement
 
@@ -39,7 +40,7 @@ form.addEventListener('submit', async event => {
     const response = await fetch(Endpoint.SearchStories, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({term, subreddit: subreddit.value}),
+      body: JSON.stringify({term, subreddit: subreddit.value, limit: Number(storyLimit.value) || 10}),
     })
     const data = (await response.json()) as SearchStoriesRsp | {error?: string}
     if (!response.ok || !('stories' in data))

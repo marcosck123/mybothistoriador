@@ -13,6 +13,7 @@ const storySearchCards = document.querySelector('#story-search-cards')
 const storyScriptHint = document.querySelector('#story-script-hint')
 const storyScriptModal = document.querySelector('#story-script-modal')
 const scriptTerm = document.querySelector('#script-term')
+const scriptLimit = document.querySelector('#script-limit')
 const startStoryScript = document.querySelector('#start-story-script')
 const scriptStatus = document.querySelector('#script-status')
 const previewVideo = document.querySelector('#preview-video')
@@ -112,7 +113,7 @@ async function startStorySearch() {
   startStoryScript.disabled = true
   scriptStatus.textContent = 'Script iniciado. Aguardando o Reddit...'
   try {
-    const response = await fetch('/api/story-script', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ term }) })
+    const response = await fetch('/api/story-script', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ term, limit: Number(scriptLimit.value) || 10 }) })
     const result = await response.json()
     if (!response.ok) throw new Error(result.error || 'Falha ao iniciar o script')
     scriptStatus.textContent = `Pesquisando “${term}”...`
@@ -159,6 +160,7 @@ function addStorySearchCard() {
 
 function updateCreationMode() {
   const automatic = creationMode.value === 'automatic'
+  storySelect.disabled = automatic || !stories.length
   document.querySelectorAll('.automatic-only').forEach(element => { element.hidden = !automatic })
   document.querySelectorAll('.manual-only').forEach(element => { element.hidden = automatic })
   generateLabel.textContent = automatic ? 'Criar tudo automaticamente' : 'Montar vídeo escolhido'

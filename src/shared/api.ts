@@ -7,7 +7,7 @@ export type GetCounterRsp = {count: number}
 /** Increment the post counter by a signed amount. */
 export type IncCounterReq = {amount: number}
 export type IncCounterRsp = {count: number}
-export type SearchStoriesReq = {term: string; subreddit: string}
+export type SearchStoriesReq = {term: string; subreddit: string; limit?: number}
 export type Story = {
   id: string
   subreddit: string

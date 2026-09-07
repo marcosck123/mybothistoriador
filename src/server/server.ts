@@ -87,7 +87,7 @@ async function routeSearchStories(
     .searchPosts({
       query: term,
       subredditName: subreddit,
-      limit: 10,
+      limit: Math.min(50, Math.max(1, Number(req.limit) || 10)),
       sort: 'relevance',
     })
     .all()
