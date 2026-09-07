@@ -18,7 +18,8 @@ if (!term || !botSubreddit) {
 }
 
 const headed = process.argv.includes('--headed')
-const browser = await chromium.launchPersistentContext('.automation-profile', {headless: !headed})
+const executablePath = process.env.BROWSER_PATH || '/usr/bin/google-chrome'
+const browser = await chromium.launchPersistentContext('.automation-profile', {headless: !headed, executablePath})
 const page = await browser.newPage()
 try {
   await page.goto(`https://www.reddit.com/r/${botSubreddit}/`, {waitUntil: 'domcontentloaded', timeout: 60000})
