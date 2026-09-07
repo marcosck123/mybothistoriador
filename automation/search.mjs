@@ -43,7 +43,7 @@ try {
     rl.close()
     await page.goto(`https://www.reddit.com/r/${botSubreddit}/`, {waitUntil: 'domcontentloaded', timeout: 60000})
   }
-  const botPost = page.locator('a[href*="/comments/"]').filter({hasText: /mybothistoriador|historiador/i}).first()
+  const botPost = page.locator('a[href*="/comments/"][href*="mybothistoriador"]').first()
   await botPost.waitFor({state: 'visible', timeout: 60000})
   const botPostUrl = await botPost.getAttribute('href')
   if (!botPostUrl) throw new Error('O post do bot foi encontrado, mas não possui URL.')
