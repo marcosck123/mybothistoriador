@@ -8,17 +8,12 @@ function argument(name, fallback) {
   return index >= 0 ? process.argv[index + 1] : fallback
 }
 
-const url = argument('url')
 const term = argument('term')
 const subreddit = argument('subreddit', 'historias')
+const botSubreddit = argument('bot-subreddit')
 const output = argument('output', 'historias.json')
-if (!url || !term) {
-  console.error('Uso: node automation/search.mjs --url URL_DO_POST --term "termo" [--subreddit historias] [--output historias.json]')
-  process.exit(2)
-}
-if (!/^https?:\/\//.test(url)) {
-  console.error('A opção --url precisa ser uma URL real começando com http:// ou https://.')
-  console.error('Exemplo: --url "https://www.reddit.com/r/seusub/posts/abc123/..."')
+if (!term || !botSubreddit) {
+  console.error('Uso: node automation/search.mjs --bot-subreddit NOME --term "termo" [--subreddit historias] [--output historias.json]')
   process.exit(2)
 }
 
@@ -26,7 +21,11 @@ const headed = process.argv.includes('--headed')
 const browser = await chromium.launchPersistentContext('.automation-profile', {headless: !headed})
 const page = await browser.newPage()
 try {
-  await page.goto(url, {waitUntil: 'domcontentloaded', timeout: 60000})
+  await page.goto(`https://www.reddit.com/r/${botSubreddit}/`, {waitUntil: 'domcontentloaded', timeout: 60000})
+  const botPost = page.locator('a[href*="/comments/"]').filter({hasText: /mybothistoriador|historiador/i}).first()
+  await botPost.waitFor({state: 'visible', timeout: 60000})
+  await botPost.click()
+  await page.waitForLoadState('domcontentloaded')
   await page.locator('#search-input').fill(term)
   await page.locator('#subreddit-select').selectOption(subreddit)
   await page.locator('#search-form').evaluate(form => form.requestSubmit())
