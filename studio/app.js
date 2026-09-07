@@ -8,6 +8,9 @@ const creationMode = document.querySelector('#creation-mode')
 const modeHint = document.querySelector('#mode-hint')
 const generate = document.querySelector('#generate')
 const generateLabel = generate.querySelector('span')
+const activateStoryScript = document.querySelector('#activate-story-script')
+const storySearchCards = document.querySelector('#story-search-cards')
+const storyScriptHint = document.querySelector('#story-script-hint')
 const previewVideo = document.querySelector('#preview-video')
 const previewText = document.querySelector('#preview-text')
 const previewAuthor = document.querySelector('#preview-author')
@@ -24,6 +27,7 @@ let stories = []
 let selectedVideo = false
 let videoDuration = 0
 let selectedVideos = []
+let storyScriptActive = false
 
 async function loadRemoteLibrary() {
   try {
@@ -64,6 +68,7 @@ async function loadStoryFiles(files) {
 
 storySelect.addEventListener('change', updateStory)
 creationMode.addEventListener('change', updateCreationMode)
+activateStoryScript.addEventListener('click', addStorySearchCard)
 for (const field of [dailyCount, parts, duration]) field.addEventListener('input', updateReady)
 speed.addEventListener('input', () => { speedValue.textContent = `${Number(speed.value).toFixed(2)}×` })
 
@@ -85,6 +90,21 @@ function updatePreview() {
 for (const field of [editTitle, editText, editAuthor]) field.addEventListener('input', updatePreview)
 
 function updateReady() { generate.disabled = !stories.length || !selectedVideo }
+
+function addStorySearchCard() {
+  storyScriptActive = true
+  const card = document.createElement('div')
+  card.className = 'story-search-card'
+  card.innerHTML = '<label>Tema da pesquisa<input class="story-theme" type="text" placeholder="ex.: relato sobrenatural"><button type="button" class="remove-card" aria-label="Remover tema">×</button></label>'
+  card.querySelector('.remove-card').addEventListener('click', () => {
+    card.remove()
+    storyScriptActive = storySearchCards.children.length > 0
+    storyScriptHint.textContent = storyScriptActive ? `${storySearchCards.children.length} tema(s) ativo(s).` : 'Sem script ativo: histórias sorteadas de toda a biblioteca.'
+  })
+  storySearchCards.append(card)
+  storyScriptHint.textContent = `${storySearchCards.children.length} tema(s) ativo(s).`
+  card.querySelector('input').focus()
+}
 
 function updateCreationMode() {
   const automatic = creationMode.value === 'automatic'
@@ -143,7 +163,12 @@ generate.addEventListener('click', async () => {
 })
 
 function chooseStory() {
-  const candidates = stories.map((story, index) => ({ story, index }))
+  const themes = [...document.querySelectorAll('.story-theme')].map(input => input.value.trim().toLocaleLowerCase()).filter(Boolean)
+  const candidates = stories.map((story, index) => ({ story, index })).filter(({ story }) => {
+    if (!themes.length) return true
+    const content = `${story.title || ''} ${story.text || story.excerpt || ''} ${story.subreddit || ''}`.toLocaleLowerCase()
+    return themes.some(theme => content.includes(theme))
+  })
   return candidates[Math.floor(Math.random() * candidates.length)]
 }
 
