@@ -16,6 +16,11 @@ if (!url || !term) {
   console.error('Uso: node automation/search.mjs --url URL_DO_POST --term "termo" [--subreddit historias] [--output historias.json]')
   process.exit(2)
 }
+if (!/^https?:\/\//.test(url)) {
+  console.error('A opção --url precisa ser uma URL real começando com http:// ou https://.')
+  console.error('Exemplo: --url "https://www.reddit.com/r/seusub/posts/abc123/..."')
+  process.exit(2)
+}
 
 const headed = process.argv.includes('--headed')
 const browser = await chromium.launchPersistentContext('.automation-profile', {headless: !headed})
