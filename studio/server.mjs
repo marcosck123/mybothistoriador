@@ -9,6 +9,7 @@ const studioDir = join(root, 'studio')
 const libraryDir = join(root, 'biblioteca')
 const port = Number(process.env.STUDIO_PORT || 8090)
 const botSubreddit = process.env.BOT_SUBREDDIT || 'mybothistoriador_dev'
+const python = join(root, '.venv-voice', 'bin', 'python')
 const jobs = new Map()
 
 async function filesUnder(directory, allowed) {
@@ -45,7 +46,7 @@ const server = createServer(async (request, response) => {
       await mkdir(output, { recursive: true })
       const job = { id, status: 'running', count, parts, output: relative(root, output), startedAt: new Date().toISOString() }
       jobs.set(id, job)
-      const child = spawn('python3', ['video/render.py', '--stories', join(libraryDir, 'historias'), '--videos', join(libraryDir, 'videos'), '--output', output, '--count', String(count), '--parts', String(parts), '--duration', String(body.duration || 0)], { cwd: root, detached: true, stdio: 'ignore' })
+      const child = spawn(python, ['video/render.py', '--stories', join(libraryDir, 'historias'), '--videos', join(libraryDir, 'videos'), '--output', output, '--count', String(count), '--parts', String(parts), '--duration', String(body.duration || 0)], { cwd: root, detached: true, stdio: 'ignore' })
       child.once('close', code => {
         job.status = code === 0 ? 'completed' : 'failed'
         job.exitCode = code

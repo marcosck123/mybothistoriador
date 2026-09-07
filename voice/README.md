@@ -10,6 +10,7 @@ Use Python 3.10–3.12 em um ambiente virtual. Python 3.14 pode não ser compat�
 python3.12 -m venv .venv-voice
 source .venv-voice/bin/activate
 pip install --upgrade pip
+pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r voice/requirements.txt
 ```
 
