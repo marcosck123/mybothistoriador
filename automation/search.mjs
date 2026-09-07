@@ -51,7 +51,7 @@ try {
   await page.waitForLoadState('domcontentloaded')
   const splashFrame = await findFrameWith('#start-btn')
   await splashFrame.locator('#start-btn').click()
-  const appFrame = await findFrameWith('#search-input')
+  const appFrame = await findFrameWith('#search-form')
   await appFrame.locator('#search-input').fill(term)
   await appFrame.locator('#subreddit-select').selectOption(subreddit)
   await appFrame.locator('#search-form').evaluate(form => form.requestSubmit())
