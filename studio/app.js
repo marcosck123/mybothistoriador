@@ -11,6 +11,10 @@ const generateLabel = generate.querySelector('span')
 const activateStoryScript = document.querySelector('#activate-story-script')
 const storySearchCards = document.querySelector('#story-search-cards')
 const storyScriptHint = document.querySelector('#story-script-hint')
+const storyScriptModal = document.querySelector('#story-script-modal')
+const scriptTerm = document.querySelector('#script-term')
+const startStoryScript = document.querySelector('#start-story-script')
+const scriptStatus = document.querySelector('#script-status')
 const previewVideo = document.querySelector('#preview-video')
 const previewText = document.querySelector('#preview-text')
 const previewAuthor = document.querySelector('#preview-author')
@@ -32,6 +36,7 @@ let storyScriptActive = false
 async function loadRemoteLibrary() {
   try {
     const index = await fetch('/api/library').then(response => response.json())
+    stories = []
     for (const path of index.stories) {
       const data = await fetch(path).then(response => response.json())
       stories.push(...(data.stories || (Array.isArray(data) ? data : [data])))
@@ -68,7 +73,10 @@ async function loadStoryFiles(files) {
 
 storySelect.addEventListener('change', updateStory)
 creationMode.addEventListener('change', updateCreationMode)
-activateStoryScript.addEventListener('click', addStorySearchCard)
+activateStoryScript.addEventListener('click', () => { storyScriptModal.hidden = false; scriptTerm.focus() })
+document.querySelector('#close-story-script').addEventListener('click', closeStoryScript)
+document.querySelector('#cancel-story-script').addEventListener('click', closeStoryScript)
+startStoryScript.addEventListener('click', startStorySearch)
 for (const field of [dailyCount, parts, duration]) field.addEventListener('input', updateReady)
 speed.addEventListener('input', () => { speedValue.textContent = `${Number(speed.value).toFixed(2)}×` })
 
@@ -90,6 +98,32 @@ function updatePreview() {
 for (const field of [editTitle, editText, editAuthor]) field.addEventListener('input', updatePreview)
 
 function updateReady() { generate.disabled = !stories.length || !selectedVideo }
+
+function closeStoryScript() {
+  storyScriptModal.hidden = true
+}
+
+async function startStorySearch() {
+  const term = scriptTerm.value.trim()
+  if (!term) {
+    scriptStatus.textContent = 'Digite um tema antes de iniciar.'
+    return
+  }
+  startStoryScript.disabled = true
+  scriptStatus.textContent = 'Script iniciado. Aguardando o Reddit...'
+  try {
+    const response = await fetch('/api/story-script', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ term }) })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.error || 'Falha ao iniciar o script')
+    scriptStatus.textContent = `Pesquisa iniciada. Arquivo: ${result.output}`
+    status.textContent = `Script pesquisando: ${term}`
+    setTimeout(loadRemoteLibrary, 5000)
+  } catch (error) {
+    scriptStatus.textContent = `Erro: ${error.message}`
+  } finally {
+    startStoryScript.disabled = false
+  }
+}
 
 function addStorySearchCard() {
   storyScriptActive = true

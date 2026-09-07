@@ -1,5 +1,6 @@
 import { createServer } from 'node:http'
-import { readFile, readdir } from 'node:fs/promises'
+import { mkdir, readFile, readdir } from 'node:fs/promises'
+import { spawn } from 'node:child_process'
 import { extname, join, normalize, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -7,6 +8,7 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const studioDir = join(root, 'studio')
 const libraryDir = join(root, 'biblioteca')
 const port = Number(process.env.STUDIO_PORT || 8090)
+const botSubreddit = process.env.BOT_SUBREDDIT || 'mybothistoriador_dev'
 
 async function filesUnder(directory, allowed) {
   const result = []
@@ -31,6 +33,26 @@ async function getLibrary() {
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, `http://${request.headers.host}`)
+    if (url.pathname === '/api/story-script' && request.method === 'POST') {
+      const chunks = []
+      for await (const chunk of request) chunks.push(chunk)
+      const body = JSON.parse(Buffer.concat(chunks).toString() || '{}')
+      const term = String(body.term || '').trim()
+      if (!term) {
+        response.writeHead(400, { 'content-type': 'application/json' })
+        response.end(JSON.stringify({ error: 'Informe um tema.' }))
+        return
+      }
+      const slug = term.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || 'sem-tema'
+      const directory = join(libraryDir, 'historias', slug)
+      await mkdir(directory, { recursive: true })
+      const output = join(directory, `historias-${Date.now()}.json`)
+      const child = spawn(process.execPath, ['automation/search.mjs', '--bot-subreddit', botSubreddit, '--term', term, '--subreddit', 'historias', '--output', output], { cwd: root, detached: true, stdio: 'ignore' })
+      child.unref()
+      response.writeHead(202, { 'content-type': 'application/json' })
+      response.end(JSON.stringify({ started: true, term, output: relative(root, output) }))
+      return
+    }
     if (url.pathname === '/api/library') {
       response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(await getLibrary()))
