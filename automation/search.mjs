@@ -36,6 +36,11 @@ try {
   await botPost.waitFor({state: 'visible', timeout: 60000})
   await botPost.click()
   await page.waitForLoadState('domcontentloaded')
+  const startButton = page.locator('#start-btn')
+  if (await startButton.isVisible({timeout: 10000}).catch(() => false)) {
+    await startButton.click()
+  }
+  await page.locator('#search-input').waitFor({state: 'visible', timeout: 60000})
   await page.locator('#search-input').fill(term)
   await page.locator('#subreddit-select').selectOption(subreddit)
   await page.locator('#search-form').evaluate(form => form.requestSubmit())
