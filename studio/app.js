@@ -115,13 +115,30 @@ async function startStorySearch() {
     const response = await fetch('/api/story-script', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ term }) })
     const result = await response.json()
     if (!response.ok) throw new Error(result.error || 'Falha ao iniciar o script')
-    scriptStatus.textContent = `Pesquisa iniciada. Arquivo: ${result.output}`
+    scriptStatus.textContent = `Pesquisando “${term}”...`
     status.textContent = `Script pesquisando: ${term}`
-    setTimeout(loadRemoteLibrary, 5000)
+    await monitorStorySearch(result.jobId, result.output)
   } catch (error) {
     scriptStatus.textContent = `Erro: ${error.message}`
   } finally {
     startStoryScript.disabled = false
+  }
+}
+
+async function monitorStorySearch(jobId, output) {
+  for (;;) {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    const job = await fetch(`/api/story-script/${encodeURIComponent(jobId)}`).then(response => response.json())
+    if (job.status === 'completed') {
+      scriptStatus.textContent = `Concluído. JSON salvo em ${output}`
+      status.textContent = 'Pesquisa concluída e adicionada à biblioteca.'
+      await loadRemoteLibrary()
+      return
+    }
+    if (job.status === 'failed') {
+      throw new Error(`O script terminou com código ${job.exitCode ?? 'desconhecido'}.`)
+    }
+    scriptStatus.textContent = 'Pesquisando no Reddit...'
   }
 }
 

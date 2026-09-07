@@ -9,6 +9,7 @@ const studioDir = join(root, 'studio')
 const libraryDir = join(root, 'biblioteca')
 const port = Number(process.env.STUDIO_PORT || 8090)
 const botSubreddit = process.env.BOT_SUBREDDIT || 'mybothistoriador_dev'
+const jobs = new Map()
 
 async function filesUnder(directory, allowed) {
   const result = []
@@ -47,10 +48,31 @@ const server = createServer(async (request, response) => {
       const directory = join(libraryDir, 'historias', slug)
       await mkdir(directory, { recursive: true })
       const output = join(directory, `historias-${Date.now()}.json`)
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      jobs.set(id, { id, term, status: 'running', output: relative(root, output), startedAt: new Date().toISOString() })
       const child = spawn(process.execPath, ['automation/search.mjs', '--bot-subreddit', botSubreddit, '--term', term, '--subreddit', 'historias', '--output', output], { cwd: root, detached: true, stdio: 'ignore' })
+      child.once('close', code => {
+        const job = jobs.get(id)
+        if (!job) return
+        job.status = code === 0 ? 'completed' : 'failed'
+        job.exitCode = code
+        job.finishedAt = new Date().toISOString()
+      })
       child.unref()
       response.writeHead(202, { 'content-type': 'application/json' })
-      response.end(JSON.stringify({ started: true, term, output: relative(root, output) }))
+      response.end(JSON.stringify({ started: true, jobId: id, term, output: relative(root, output) }))
+      return
+    }
+    if (url.pathname.startsWith('/api/story-script/') && request.method === 'GET') {
+      const id = decodeURIComponent(url.pathname.slice('/api/story-script/'.length))
+      const job = jobs.get(id)
+      if (!job) {
+        response.writeHead(404, { 'content-type': 'application/json' })
+        response.end(JSON.stringify({ error: 'Pesquisa não encontrada.' }))
+        return
+      }
+      response.writeHead(200, { 'content-type': 'application/json' })
+      response.end(JSON.stringify(job))
       return
     }
     if (url.pathname === '/api/library') {
