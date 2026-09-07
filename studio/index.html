@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Historiador Studio</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#"><span class="brand-mark">H</span><span>historiador <small>studio</small></span></a>
+        <span class="connection"><i></i> pipeline local</span>
+      </header>
+
+      <section class="workspace-head">
+        <div><p class="eyebrow">montagem automática</p><h1>Transforme uma história<br><em>em vídeo.</em></h1></div>
+        <p class="lede">Escolha a história, o cenário e a voz. Acompanhe cada etapa antes de exportar.</p>
+      </section>
+
+      <section class="studio-grid">
+        <aside class="controls">
+          <div class="control-section"><div class="section-label"><span>01</span><b>História</b></div><label class="file-picker"><input id="story-file" type="file" accept=".json,.txt"><span id="story-file-label">Carregar historias.json</span><strong>+</strong></label><select id="story-select" disabled><option>Carregue um arquivo de histórias</option></select></div>
+          <div class="control-section"><div class="section-label"><span>02</span><b>Vídeo de fundo</b></div><label class="file-picker"><input id="video-file" type="file" accept="video/*"><span id="video-file-label">Escolher vídeo local</span><strong>+</strong></label><div class="video-meta" id="video-meta">Nenhum vídeo selecionado</div></div>
+          <div class="control-section"><div class="section-label"><span>03</span><b>Narração</b></div><label>Motor de voz<select id="voice-select"><option value="pm_alex">Kokoro · Alex (pt-BR)</option><option value="pf_dora">Kokoro · Dora (pt-BR)</option></select></label><label>Velocidade <output id="speed-value">1.0×</output><input id="speed" type="range" min="0.8" max="1.2" step="0.05" value="1"></label></div>
+          <button class="generate" id="generate" type="button" disabled><span>Gerar prévia</span><b>↗</b></button>
+        </aside>
+
+        <section class="preview-column">
+          <div class="preview-head"><div><p class="eyebrow">prévia vertical</p><h2>Seu vídeo</h2></div><span class="format">9:16 · 1080 × 1920</span></div>
+          <div class="phone" id="phone"><video id="preview-video" playsinline loop muted></video><div class="video-shade"></div><div class="preview-copy"><span class="preview-tag" id="preview-tag">HISTORIADOR</span><p id="preview-text">Sua história aparecerá aqui.</p><small id="preview-author">Escolha os arquivos ao lado para começar.</small></div><div class="play-badge">▶</div></div>
+          <div class="timeline"><div class="timeline-top"><span>progresso da montagem</span><b id="progress-label">aguardando arquivos</b></div><div class="progress"><i id="progress-bar"></i></div><ol id="steps"><li>texto preparado</li><li>voz gerada</li><li>vídeo montado</li><li>pronto para exportar</li></ol></div>
+        </section>
+      </section>
+
+      <footer><span id="status">Nenhum projeto em andamento</span><span>arquivos locais · sem upload</span></footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
