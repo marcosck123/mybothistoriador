@@ -212,16 +212,36 @@ generate.addEventListener('click', async () => {
   }
   previewVideo.currentTime = start
   clipMeta.textContent = `${manual ? 'Manual' : 'Sorteado'} · Parte 1/${partCount} · ${formatSeconds(start)} → ${formatSeconds(Math.min(start + secondsPerPart, videoDuration || start + secondsPerPart))}`
-  for (const [index, label] of ['Sorteando histórias e trechos', 'Preparando partes', 'Gerando narrações Kokoro', 'Lote pronto para exportar'].entries()) {
-    progressLabel.textContent = label.toLowerCase()
-    progressBar.style.width = `${(index + 1) * 25}%`
-    steps[index].classList.add('active')
-    status.textContent = index === 3 ? `${batchCount} vídeo(s) preparado(s) para o dia` : `Lote de ${batchCount} · etapa ${index + 1} de 4 · ${label}`
-    await new Promise(resolve => setTimeout(resolve, 700))
+  try {
+    const response = await fetch('/api/video-jobs', { method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({count: batchCount, parts: partCount, duration: Number(duration.value) || 0}) })
+    const job = await response.json()
+    if (!response.ok) throw new Error(job.error || 'Não foi possível iniciar a renderização.')
+    await monitorVideoJob(job.id, batchCount)
+  } catch (error) {
+    status.textContent = `Erro na geração: ${error.message}`
+    progressLabel.textContent = 'erro'
+  } finally {
+    generate.disabled = false
   }
-  generate.disabled = false
-  status.textContent = 'Prévia pronta. Você pode editar os campos e criar novamente.'
 })
+
+async function monitorVideoJob(jobId, count) {
+  progressLabel.textContent = 'renderizando com Kokoro e FFmpeg'
+  status.textContent = `Gerando ${count} vídeo(s) reais...`
+  for (;;) {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    const job = await fetch(`/api/video-jobs/${encodeURIComponent(jobId)}`).then(response => response.json())
+    if (job.status === 'completed') {
+      progressBar.style.width = '100%'
+      steps.forEach(step => step.classList.add('active'))
+      progressLabel.textContent = 'lote concluído'
+      status.textContent = `${count} vídeo(s) gerado(s) em ${job.output}`
+      return
+    }
+    if (job.status === 'failed') throw new Error(`renderização encerrada com código ${job.exitCode ?? 'desconhecido'}`)
+    progressBar.style.width = '50%'
+  }
+}
 
 function chooseStory() {
   const themes = [...document.querySelectorAll('.story-theme')].map(input => input.value.trim().toLocaleLowerCase()).filter(Boolean)

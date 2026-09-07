@@ -34,6 +34,40 @@ async function getLibrary() {
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, `http://${request.headers.host}`)
+    if (url.pathname === '/api/video-jobs' && request.method === 'POST') {
+      const chunks = []
+      for await (const chunk of request) chunks.push(chunk)
+      const body = JSON.parse(Buffer.concat(chunks).toString() || '{}')
+      const count = Math.min(30, Math.max(1, Number(body.count) || 6))
+      const parts = Math.min(20, Math.max(1, Number(body.parts) || 2))
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      const output = join(libraryDir, 'gerados', new Date().toISOString().slice(0, 10), id)
+      await mkdir(output, { recursive: true })
+      const job = { id, status: 'running', count, parts, output: relative(root, output), startedAt: new Date().toISOString() }
+      jobs.set(id, job)
+      const child = spawn('python3', ['video/render.py', '--stories', join(libraryDir, 'historias'), '--videos', join(libraryDir, 'videos'), '--output', output, '--count', String(count), '--parts', String(parts), '--duration', String(body.duration || 0)], { cwd: root, detached: true, stdio: 'ignore' })
+      child.once('close', code => {
+        job.status = code === 0 ? 'completed' : 'failed'
+        job.exitCode = code
+        job.finishedAt = new Date().toISOString()
+      })
+      child.unref()
+      response.writeHead(202, { 'content-type': 'application/json' })
+      response.end(JSON.stringify(job))
+      return
+    }
+    if (url.pathname.startsWith('/api/video-jobs/') && request.method === 'GET') {
+      const id = decodeURIComponent(url.pathname.slice('/api/video-jobs/'.length))
+      const job = jobs.get(id)
+      if (!job) {
+        response.writeHead(404, { 'content-type': 'application/json' })
+        response.end(JSON.stringify({ error: 'Job não encontrado.' }))
+        return
+      }
+      response.writeHead(200, { 'content-type': 'application/json' })
+      response.end(JSON.stringify(job))
+      return
+    }
     if (url.pathname === '/api/story-script' && request.method === 'POST') {
       const chunks = []
       for await (const chunk of request) chunks.push(chunk)
