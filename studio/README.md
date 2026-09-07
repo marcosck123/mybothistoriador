@@ -14,8 +14,8 @@ Depois abra `http://localhost:8090`.
 
 ## Usar
 
-1. Selecione um JSON de histórias produzido pelo coletor.
-2. Selecione um vídeo local de fundo, como parkour.
+1. Selecione a pasta `biblioteca/historias` ou um JSON produzido pelo coletor.
+2. Selecione a pasta `biblioteca/videos` ou vídeos locais de fundo, como parkour.
 3. Escolha o modo **Manual** ou **Automático**.
 4. No manual, escolha a história, título e vídeo antes de montar.
 5. No automático, informe o tema, a quantidade de partes e, se quiser, a duração de cada parte.

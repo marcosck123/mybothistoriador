@@ -1,6 +1,8 @@
 const storyFile = document.querySelector('#story-file')
+const storyLibrary = document.querySelector('#story-library')
 const storySelect = document.querySelector('#story-select')
 const videoFile = document.querySelector('#video-file')
+const videoLibrary = document.querySelector('#video-library')
 const theme = document.querySelector('#theme')
 const parts = document.querySelector('#parts')
 const duration = document.querySelector('#duration')
@@ -27,16 +29,22 @@ let selectedVideo = false
 let videoDuration = 0
 let selectedVideos = []
 
-storyFile.addEventListener('change', async () => {
-  const file = storyFile.files[0]
-  if (!file) return
-  const data = JSON.parse(await file.text())
-  stories = data.stories || (Array.isArray(data) ? data : [data])
+storyFile.addEventListener('change', async () => loadStoryFiles([...storyFile.files]))
+storyLibrary.addEventListener('change', async () => loadStoryFiles([...storyLibrary.files]))
+
+async function loadStoryFiles(files) {
+  if (!files.length) return
+  stories = []
+  for (const file of files.filter(item => item.name.toLowerCase().endsWith('.json'))) {
+    const data = JSON.parse(await file.text())
+    stories.push(...(data.stories || (Array.isArray(data) ? data : [data])))
+  }
   storySelect.innerHTML = stories.map((story, index) => `<option value="${index}">${index + 1}. ${story.title || 'História sem título'}</option>`).join('')
   storySelect.disabled = false
-  document.querySelector('#story-file-label').textContent = file.name
+  document.querySelector('#story-file-label').textContent = files.length === 1 ? files[0].name : 'JSONs carregados'
+  document.querySelector('#story-meta').textContent = `${stories.length} história(s) carregada(s)`
   updateStory()
-})
+}
 
 storySelect.addEventListener('change', updateStory)
 creationMode.addEventListener('change', updateCreationMode)
@@ -55,6 +63,17 @@ videoFile.addEventListener('change', () => {
   previewVideo.play().catch(() => {})
   document.querySelector('#video-file-label').textContent = files.length > 1 ? `${files.length} vídeos selecionados` : file.name
   document.querySelector('#video-meta').textContent = `${files.map(item => `${(item.size / 1024 / 1024).toFixed(1)} MB`).join(' · ')} · vídeo local`
+  updateReady()
+})
+videoLibrary.addEventListener('change', () => {
+  const files = [...videoLibrary.files].filter(file => file.type.startsWith('video/'))
+  if (!files.length) return
+  selectedVideos = files
+  selectedVideo = true
+  const file = files[0]
+  previewVideo.src = URL.createObjectURL(file)
+  previewVideo.play().catch(() => {})
+  document.querySelector('#video-meta').textContent = `${files.length} vídeo(s) na biblioteca`
   updateReady()
 })
 speed.addEventListener('input', () => { speedValue.textContent = `${Number(speed.value).toFixed(2)}×` })
