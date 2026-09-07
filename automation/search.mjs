@@ -45,7 +45,9 @@ try {
   }
   const botPost = page.locator('a[href*="/comments/"]').filter({hasText: /mybothistoriador|historiador/i}).first()
   await botPost.waitFor({state: 'visible', timeout: 60000})
-  await botPost.click()
+  const botPostUrl = await botPost.getAttribute('href')
+  if (!botPostUrl) throw new Error('O post do bot foi encontrado, mas não possui URL.')
+  await page.goto(new URL(botPostUrl, page.url()).toString(), {waitUntil: 'domcontentloaded', timeout: 60000})
   await page.waitForLoadState('domcontentloaded')
   const appFrame = await findFrameWith('#start-btn')
   await appFrame.locator('#start-btn').click()
