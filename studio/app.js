@@ -1,5 +1,5 @@
 const storySelect = document.querySelector('#story-select')
-const theme = document.querySelector('#theme')
+const dailyCount = document.querySelector('#daily-count')
 const parts = document.querySelector('#parts')
 const duration = document.querySelector('#duration')
 const clipMeta = document.querySelector('#clip-meta')
@@ -64,7 +64,7 @@ async function loadStoryFiles(files) {
 
 storySelect.addEventListener('change', updateStory)
 creationMode.addEventListener('change', updateCreationMode)
-for (const field of [theme, parts, duration]) field.addEventListener('input', updateReady)
+for (const field of [dailyCount, parts, duration]) field.addEventListener('input', updateReady)
 speed.addEventListener('input', () => { speedValue.textContent = `${Number(speed.value).toFixed(2)}×` })
 
 function updateStory() {
@@ -98,6 +98,7 @@ function updateCreationMode() {
 
 generate.addEventListener('click', async () => {
   generate.disabled = true
+  const batchCount = Math.max(1, Number(dailyCount.value) || 1)
   const selected = creationMode.value === 'automatic'
     ? chooseStory()
     : { story: stories[Number(storySelect.value)], index: Number(storySelect.value) }
@@ -130,11 +131,11 @@ generate.addEventListener('click', async () => {
   }
   previewVideo.currentTime = start
   clipMeta.textContent = `${manual ? 'Manual' : 'Sorteado'} · Parte 1/${partCount} · ${formatSeconds(start)} → ${formatSeconds(Math.min(start + secondsPerPart, videoDuration || start + secondsPerPart))}`
-  for (const [index, label] of ['Sorteando história e trecho', 'Preparando partes', 'Gerando narração Kokoro', 'Prévia pronta'].entries()) {
+  for (const [index, label] of ['Sorteando histórias e trechos', 'Preparando partes', 'Gerando narrações Kokoro', 'Lote pronto para exportar'].entries()) {
     progressLabel.textContent = label.toLowerCase()
     progressBar.style.width = `${(index + 1) * 25}%`
     steps[index].classList.add('active')
-    status.textContent = index === 3 ? 'Prévia pronta para exportar' : `Etapa ${index + 1} de 4 · ${label}`
+    status.textContent = index === 3 ? `${batchCount} vídeo(s) preparado(s) para o dia` : `Lote de ${batchCount} · etapa ${index + 1} de 4 · ${label}`
     await new Promise(resolve => setTimeout(resolve, 700))
   }
   generate.disabled = false
@@ -142,11 +143,7 @@ generate.addEventListener('click', async () => {
 })
 
 function chooseStory() {
-  const query = theme.value.trim().toLocaleLowerCase()
-  const candidates = stories.map((story, index) => ({ story, index })).filter(({ story }) => {
-    if (!query) return true
-    return `${story.title || ''} ${story.text || story.excerpt || ''} ${story.subreddit || ''}`.toLocaleLowerCase().includes(query)
-  })
+  const candidates = stories.map((story, index) => ({ story, index }))
   return candidates[Math.floor(Math.random() * candidates.length)]
 }
 

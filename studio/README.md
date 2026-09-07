@@ -18,7 +18,7 @@ Depois abra `http://localhost:8090`.
 2. Selecione a pasta `biblioteca/videos` ou vídeos locais de fundo, como parkour.
 3. Escolha o modo **Manual** ou **Automático**.
 4. No manual, escolha a história, título e vídeo antes de montar.
-5. No automático, informe o tema, a quantidade de partes e, se quiser, a duração de cada parte.
+5. No automático, informe a quantidade diária (6 por padrão), a quantidade de partes e, se quiser, a duração de cada parte.
 6. Clique no botão de montagem.
 
 O Studio sorteia uma história que contém o tema informado, divide o texto em partes e sorteia um trecho do vídeo para a primeira prévia. Esta primeira versão é visual local e simula as etapas de geração. A próxima integração conectará Kokoro para criar o áudio e FFmpeg para exportar todos os MP4s finais.
