@@ -29,7 +29,8 @@ async function findFrameWith(selector, timeout = 60000) {
   while (Date.now() < deadline) {
     for (const currentPage of browser.pages()) {
       for (const frame of currentPage.frames()) {
-        if (await frame.locator(selector).count().catch(() => 0)) return frame
+        const locator = frame.locator(selector)
+        if (await locator.count().catch(() => 0) && await locator.first().isVisible().catch(() => false)) return frame
       }
     }
     await page.waitForTimeout(500)
@@ -56,7 +57,7 @@ try {
   const appFrame = await findFrameWith('#search-form')
   await appFrame.locator('#search-input').fill(term)
   await appFrame.locator('#subreddit-select').selectOption(subreddit)
-  await appFrame.locator('#search-form').evaluate(form => form.requestSubmit())
+  await appFrame.locator('#search-form button[type="submit"]').click()
   await appFrame.locator('#result-count').waitFor({state: 'visible', timeout: 60000})
   await appFrame.waitForFunction(() => !document.querySelector('#result-count')?.textContent?.includes('pesquisando'))
   const stories = await appFrame.locator('.story-card').evaluateAll(cards => cards.map(card => ({
