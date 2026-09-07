@@ -9,6 +9,13 @@ Em toda tarefa de implementação, depuração, pesquisa técnica ou alteração
 3. Informe ao usuário, de forma breve, quais papéis ou workers serão usados e por quê.
 4. Monitore os workers, revise os resultados e verifique o estado final no workspace. Nunca trate o relatório de um worker como prova suficiente.
 
+## Execução autônoma
+
+- Não peça confirmação para etapas normais e reversíveis que façam parte da tarefa solicitada.
+- Execute diretamente inspeções, edição de arquivos, testes, builds, commits e pushes quando estiverem claramente dentro do objetivo pedido pelo usuário.
+- Só interrompa para pedir uma decisão quando houver destruição ou sobrescrita material de dados, falta de credencial necessária ou uma escolha que altere significativamente o objetivo.
+- Em caso de bloqueio, esgote primeiro as alternativas seguras e informe objetivamente o motivo.
+
 ## Seleção das demais skills
 
 Depois de carregar `agentix-ceo`, selecione as skills especializadas necessárias:
