@@ -14,6 +14,23 @@ def run(command: list[str]) -> None:
     subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
+def ass_time(seconds: float) -> str:
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    remainder = seconds % 60
+    return f"{hours}:{minutes:02d}:{remainder:05.2f}"
+
+
+def write_subtitles(audio_path: Path, subtitle_path: Path, model) -> None:
+    segments, _ = model.transcribe(str(audio_path), language="pt", vad_filter=True, beam_size=1)
+    lines = ["[Script Info]", "ScriptType: v4.00+", "[V4+ Styles]", "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding", "Style: Default,Arial,22,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,1,0,1,3,0,2,40,40,130,1", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
+    for segment in segments:
+        text = segment.text.strip().replace("{", "\\{").replace("}", "\\}")
+        if text:
+            lines.append(f"Dialogue: 0,{ass_time(segment.start)},{ass_time(segment.end)},Default,,0,0,0,,{text}")
+    subtitle_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def split_text(text: str, parts: int) -> list[str]:
     words = text.split()
     size = max(1, (len(words) + parts - 1) // parts)
@@ -38,6 +55,7 @@ def main() -> None:
         from kokoro import KPipeline
         import numpy as np
         import soundfile as sf
+        from faster_whisper import WhisperModel
     except ImportError as error:
         raise SystemExit("Kokoro ausente. Instale voice/requirements.txt em Python 3.10–3.12.") from error
 
@@ -55,6 +73,7 @@ def main() -> None:
 
     args.output.mkdir(parents=True, exist_ok=True)
     pipeline = KPipeline(lang_code="p")
+    whisper = WhisperModel("small", device="cpu", compute_type="int8")
     random.shuffle(stories)
     random.shuffle(videos)
     with tempfile.TemporaryDirectory(prefix="historiador-") as temporary:
@@ -70,9 +89,11 @@ def main() -> None:
             if not chunks:
                 raise SystemExit(f"Kokoro não gerou áudio para o vídeo {index + 1}.")
             sf.write(audio_path, np.concatenate(chunks), 24000)
-            text_path.write_text(title, encoding="utf-8")
+            subtitle_path = temporary_dir / f"subtitle-{index}.ass"
+            write_subtitles(audio_path, subtitle_path, whisper)
             output_path = args.output / f"video-{index + 1:02d}.mp4"
-            command = ["ffmpeg", "-y", "-i", str(videos[index % len(videos)]), "-i", str(audio_path), "-map", "0:v:0", "-map", "1:a:0", "-shortest", "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,format=yuv420p", "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-c:a", "aac", "-b:a", "192k", str(output_path)]
+            video_filter = f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles={subtitle_path},format=yuv420p"
+            command = ["ffmpeg", "-y", "-i", str(videos[index % len(videos)]), "-i", str(audio_path), "-map", "0:v:0", "-map", "1:a:0", "-shortest", "-vf", video_filter, "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-c:a", "aac", "-b:a", "192k", str(output_path)]
             run(command)
             print(f"Gerado: {output_path}")
 

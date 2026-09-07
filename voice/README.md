@@ -14,6 +14,8 @@ pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r voice/requirements.txt
 ```
 
+O renderizador usa `faster-whisper` localmente para identificar os tempos das falas e inserir legendas sincronizadas no vídeo. Na primeira execução, o modelo Whisper será baixado.
+
 ## Uso
 
 ```bash
