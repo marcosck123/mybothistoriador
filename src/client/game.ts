@@ -23,7 +23,7 @@ function renderStories(stories: Story[]): void {
     ? stories
         .map(
           story =>
-            `<article class="story-card"><div class="card-meta"><span>${story.subreddit}</span><span>Reddit</span></div><h3>${escapeHtml(story.title)}</h3><p>${escapeHtml(story.excerpt)}</p><a class="author" href="${story.url}" target="_blank" rel="noreferrer">${escapeHtml(story.author)} ↗</a></article>`,
+      `<article class="story-card"><div class="card-meta"><span>${story.subreddit}</span><span>Reddit</span></div><h3>${escapeHtml(story.title)}</h3><p>${escapeHtml(story.excerpt)}</p><details><summary>Ver história completa</summary><div class="full-text">${escapeHtml(story.text || story.excerpt)}</div></details><a class="author" href="${story.url}" target="_blank" rel="noreferrer">${escapeHtml(story.author)} ↗</a></article>`,
         )
         .join('')
     : '<p class="empty-state">Nenhuma história encontrada para essa pesquisa.</p>'

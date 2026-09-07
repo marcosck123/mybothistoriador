@@ -61,6 +61,7 @@ try {
     subreddit: card.querySelector('.card-meta span')?.textContent?.trim() || '',
     title: card.querySelector('h3')?.textContent?.trim() || '',
     excerpt: card.querySelector('p')?.textContent?.trim() || '',
+    text: card.querySelector('.full-text')?.textContent?.trim() || card.querySelector('p')?.textContent?.trim() || '',
     author: card.querySelector('.author')?.textContent?.trim() || '',
     url: card.querySelector('.author')?.getAttribute('href') || '',
   })))
