@@ -9,7 +9,7 @@ npx playwright install chromium
 node automation/search.mjs --headed --bot-subreddit mybothistoriador_dev --term "relato sobrenatural"
 ```
 
-O script atual usa modo invisível. Para autenticar, altere temporariamente `headless: true` para `headless: false` em `automation/search.mjs`, execute uma vez e restaure depois.
+O script usa o navegador visível por padrão, porque o Reddit pode bloquear a renderização em modo headless. Use `--headless` apenas quando o ambiente já permitir esse modo.
 
 Por padrão, o script usa o Chromium instalado pelo Playwright em um perfil separado, evitando conflitos com o Chrome do sistema/WSL. Se precisar usar outro navegador, defina `BROWSER_PATH`.
 

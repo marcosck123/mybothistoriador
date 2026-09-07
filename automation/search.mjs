@@ -19,7 +19,7 @@ if (!term || !botSubreddit) {
   process.exit(2)
 }
 
-const headed = process.argv.includes('--headed')
+const headed = !process.argv.includes('--headless')
 const launchOptions = {headless: !headed}
 if (process.env.BROWSER_PATH) launchOptions.executablePath = process.env.BROWSER_PATH
 const browser = await chromium.launchPersistentContext('.automation-profile', launchOptions)
