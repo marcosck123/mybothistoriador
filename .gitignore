@@ -5,3 +5,6 @@
 /docker/.env
 .automation-profile/
 historias.json
+__pycache__/
+.venv-voice/
+audio/
