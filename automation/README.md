@@ -1,0 +1,20 @@
+# Automação da pesquisa
+
+O script controla a interface do post Devvit em segundo plano e salva apenas os resultados que o bot exibir.
+
+Na primeira execução em modo visível, faça login no Reddit para criar o perfil persistente:
+
+```bash
+npx playwright install chromium
+node automation/search.mjs --headed --url "URL_DO_POST" --term "relato sobrenatural"
+```
+
+O script atual usa modo invisível. Para autenticar, altere temporariamente `headless: true` para `headless: false` em `automation/search.mjs`, execute uma vez e restaure depois.
+
+Uso normal:
+
+```bash
+npm run search -- --url "URL_DO_POST" --term "relato sobrenatural" --subreddit historias --output historias.json
+```
+
+O arquivo `.automation-profile/` guarda a sessão local e nunca deve ser publicado. O script não cria dados fictícios e não usa a API externa; ele lê somente os cards retornados pela UI do Devvit.

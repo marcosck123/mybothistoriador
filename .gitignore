@@ -3,3 +3,5 @@
 /public/*.js*
 /.env
 /docker/.env
+.automation-profile/
+historias.json
