@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises'
 import process from 'node:process'
+import readline from 'node:readline/promises'
+import { stdin as input, stdout as stdout } from 'node:process'
 import { chromium } from 'playwright'
 
 function argument(name, fallback) {
@@ -23,6 +25,13 @@ const browser = await chromium.launchPersistentContext('.automation-profile', {h
 const page = await browser.newPage()
 try {
   await page.goto(`https://www.reddit.com/r/${botSubreddit}/`, {waitUntil: 'domcontentloaded', timeout: 60000})
+  if (headed && page.url().includes('logging_in=true')) {
+    console.log('Conclua o login do Reddit na janela aberta e volte ao terminal.')
+    const rl = readline.createInterface({input, output: stdout})
+    await rl.question('Pressione Enter depois que o login terminar: ')
+    rl.close()
+    await page.goto(`https://www.reddit.com/r/${botSubreddit}/`, {waitUntil: 'domcontentloaded', timeout: 60000})
+  }
   const botPost = page.locator('a[href*="/comments/"]').filter({hasText: /mybothistoriador|historiador/i}).first()
   await botPost.waitFor({state: 'visible', timeout: 60000})
   await botPost.click()
