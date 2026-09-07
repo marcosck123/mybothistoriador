@@ -65,8 +65,13 @@ const server = createServer(async (request, response) => {
     response.writeHead(200)
     response.end(await readFile(target))
   } catch (error) {
-    response.writeHead(error.code === 'ENOENT' ? 404 : 500, { 'content-type': 'text/plain; charset=utf-8' })
-    response.end(error.code === 'ENOENT' ? 'Não encontrado' : 'Erro no servidor do Studio')
+    if (!response.headersSent) {
+      response.writeHead(error.code === 'ENOENT' ? 404 : 500, { 'content-type': 'text/plain; charset=utf-8' })
+      response.end(error.code === 'ENOENT' ? 'Não encontrado' : 'Erro no servidor do Studio')
+    } else if (!response.writableEnded) {
+      response.end()
+    }
+    console.error('Erro no Studio:', error)
   }
 })
 
