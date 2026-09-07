@@ -27,8 +27,10 @@ const page = await browser.newPage()
 async function findFrameWith(selector, timeout = 60000) {
   const deadline = Date.now() + timeout
   while (Date.now() < deadline) {
-    for (const frame of page.frames()) {
-      if (await frame.locator(selector).count().catch(() => 0)) return frame
+    for (const currentPage of browser.pages()) {
+      for (const frame of currentPage.frames()) {
+        if (await frame.locator(selector).count().catch(() => 0)) return frame
+      }
     }
     await page.waitForTimeout(500)
   }
