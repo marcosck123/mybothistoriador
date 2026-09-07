@@ -23,7 +23,8 @@
           <div class="control-section"><div class="section-label"><span>01</span><b>História</b></div><label class="file-picker"><input id="story-file" type="file" accept=".json,.txt"><span id="story-file-label">Carregar historias.json</span><strong>+</strong></label><select id="story-select" disabled><option>Carregue um arquivo de histórias</option></select></div>
           <div class="control-section"><div class="section-label"><span>02</span><b>Vídeo de fundo</b></div><label class="file-picker"><input id="video-file" type="file" accept="video/*"><span id="video-file-label">Escolher vídeo local</span><strong>+</strong></label><div class="video-meta" id="video-meta">Nenhum vídeo selecionado</div></div>
           <div class="control-section"><div class="section-label"><span>03</span><b>Narração</b></div><label>Motor de voz<select id="voice-select"><option value="pm_alex">Kokoro · Alex (pt-BR)</option><option value="pf_dora">Kokoro · Dora (pt-BR)</option></select></label><label>Velocidade <output id="speed-value">1.0×</output><input id="speed" type="range" min="0.8" max="1.2" step="0.05" value="1"></label></div>
-          <button class="generate" id="generate" type="button" disabled><span>Gerar prévia</span><b>↗</b></button>
+          <div class="control-section edit-section"><div class="section-label"><span>04</span><b>Ajustes rápidos</b><small>opcional</small></div><label>Título<input id="edit-title" type="text" placeholder="Título do vídeo"></label><label>Texto da tela<textarea id="edit-text" rows="4" placeholder="O texto da história aparecerá aqui"></textarea></label><label>Autor<input id="edit-author" type="text" placeholder="Autor"></label></div>
+          <button class="generate" id="generate" type="button" disabled><span>Criar automaticamente</span><b>↗</b></button>
         </aside>
 
         <section class="preview-column">

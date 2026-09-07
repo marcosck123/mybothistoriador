@@ -5,6 +5,9 @@ const generate = document.querySelector('#generate')
 const previewVideo = document.querySelector('#preview-video')
 const previewText = document.querySelector('#preview-text')
 const previewAuthor = document.querySelector('#preview-author')
+const editTitle = document.querySelector('#edit-title')
+const editText = document.querySelector('#edit-text')
+const editAuthor = document.querySelector('#edit-author')
 const progressBar = document.querySelector('#progress-bar')
 const progressLabel = document.querySelector('#progress-label')
 const status = document.querySelector('#status')
@@ -41,10 +44,19 @@ speed.addEventListener('input', () => { speedValue.textContent = `${Number(speed
 function updateStory() {
   const story = stories[Number(storySelect.value)]
   if (!story) return
-  previewText.textContent = story.text || story.excerpt || 'Sem texto disponível.'
-  previewAuthor.textContent = `${story.author || 'autor desconhecido'} · ${story.subreddit || 'Reddit'}`
+  editTitle.value = story.title || ''
+  editText.value = story.text || story.excerpt || ''
+  editAuthor.value = story.author || ''
+  updatePreview()
   updateReady()
 }
+
+function updatePreview() {
+  previewText.textContent = editText.value || 'Sem texto disponível.'
+  previewAuthor.textContent = `${editAuthor.value || 'autor desconhecido'} · Reddit`
+}
+
+for (const field of [editTitle, editText, editAuthor]) field.addEventListener('input', updatePreview)
 
 function updateReady() { generate.disabled = !stories.length || !selectedVideo }
 
@@ -58,4 +70,5 @@ generate.addEventListener('click', async () => {
     await new Promise(resolve => setTimeout(resolve, 700))
   }
   generate.disabled = false
+  status.textContent = 'Prévia pronta. Você pode editar os campos e criar novamente.'
 })
