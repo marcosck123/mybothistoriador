@@ -1,4 +1,3 @@
-const storyFile = document.querySelector('#story-file')
 const storyLibrary = document.querySelector('#story-library')
 const storySelect = document.querySelector('#story-select')
 const videoFile = document.querySelector('#video-file')
@@ -29,7 +28,6 @@ let selectedVideo = false
 let videoDuration = 0
 let selectedVideos = []
 
-storyFile.addEventListener('change', async () => loadStoryFiles([...storyFile.files]))
 storyLibrary.addEventListener('change', async () => loadStoryFiles([...storyLibrary.files]))
 
 async function loadStoryFiles(files) {
@@ -41,7 +39,6 @@ async function loadStoryFiles(files) {
   }
   storySelect.innerHTML = stories.map((story, index) => `<option value="${index}">${index + 1}. ${story.title || 'História sem título'}</option>`).join('')
   storySelect.disabled = false
-  document.querySelector('#story-file-label').textContent = files.length === 1 ? files[0].name : 'JSONs carregados'
   document.querySelector('#story-meta').textContent = `${stories.length} história(s) carregada(s)`
   updateStory()
 }
