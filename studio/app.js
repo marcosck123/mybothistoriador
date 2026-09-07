@@ -5,6 +5,7 @@ const theme = document.querySelector('#theme')
 const parts = document.querySelector('#parts')
 const duration = document.querySelector('#duration')
 const clipMeta = document.querySelector('#clip-meta')
+const videoMode = document.querySelector('#video-mode')
 const generate = document.querySelector('#generate')
 const previewVideo = document.querySelector('#preview-video')
 const previewText = document.querySelector('#preview-text')
@@ -21,6 +22,7 @@ const steps = [...document.querySelectorAll('#steps li')]
 let stories = []
 let selectedVideo = false
 let videoDuration = 0
+let selectedVideos = []
 
 storyFile.addEventListener('change', async () => {
   const file = storyFile.files[0]
@@ -36,8 +38,10 @@ storyFile.addEventListener('change', async () => {
 storySelect.addEventListener('change', updateStory)
 for (const field of [theme, parts, duration]) field.addEventListener('input', updateReady)
 videoFile.addEventListener('change', () => {
-  const file = videoFile.files[0]
+  const files = [...videoFile.files]
+  const file = files[0]
   if (!file) return
+  selectedVideos = files
   selectedVideo = true
   previewVideo.src = URL.createObjectURL(file)
   previewVideo.addEventListener('loadedmetadata', () => {
@@ -45,8 +49,8 @@ videoFile.addEventListener('change', () => {
     document.querySelector('#video-meta').textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB · ${formatSeconds(videoDuration)} · vídeo local`
   }, { once: true })
   previewVideo.play().catch(() => {})
-  document.querySelector('#video-file-label').textContent = file.name
-  document.querySelector('#video-meta').textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB · vídeo local`
+  document.querySelector('#video-file-label').textContent = files.length > 1 ? `${files.length} vídeos selecionados` : file.name
+  document.querySelector('#video-meta').textContent = `${files.map(item => `${(item.size / 1024 / 1024).toFixed(1)} MB`).join(' · ')} · vídeo local`
   updateReady()
 })
 speed.addEventListener('input', () => { speedValue.textContent = `${Number(speed.value).toFixed(2)}×` })
@@ -87,10 +91,21 @@ generate.addEventListener('click', async () => {
   editAuthor.value = selected.story.author || ''
   updatePreview()
   const secondsPerPart = Number(duration.value) || Math.max(10, Math.ceil(editText.value.length / 14 / partCount))
+  const manual = videoMode.value === 'manual'
+  const manualVideo = manual ? selectedVideos[0] : null
+  if (manual && selectedVideos.length < partCount) {
+    status.textContent = `Selecione ${partCount} vídeos para o modo manual.`
+    generate.disabled = false
+    return
+  }
   const maxStart = Math.max(0, videoDuration - secondsPerPart)
-  const start = Math.random() * maxStart
+  const start = manual ? 0 : Math.random() * maxStart
+  if (manualVideo && previewVideo.src) {
+    previewVideo.src = URL.createObjectURL(manualVideo)
+    previewVideo.currentTime = 0
+  }
   previewVideo.currentTime = start
-  clipMeta.textContent = `Parte 1/${partCount} · ${formatSeconds(start)} → ${formatSeconds(Math.min(start + secondsPerPart, videoDuration || start + secondsPerPart))}`
+  clipMeta.textContent = `${manual ? 'Manual' : 'Sorteado'} · Parte 1/${partCount} · ${formatSeconds(start)} → ${formatSeconds(Math.min(start + secondsPerPart, videoDuration || start + secondsPerPart))}`
   for (const [index, label] of ['Sorteando história e trecho', 'Preparando partes', 'Gerando narração Kokoro', 'Prévia pronta'].entries()) {
     progressLabel.textContent = label.toLowerCase()
     progressBar.style.width = `${(index + 1) * 25}%`
