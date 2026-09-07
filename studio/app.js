@@ -98,7 +98,9 @@ function updatePreview() {
 
 for (const field of [editTitle, editText, editAuthor]) field.addEventListener('input', updatePreview)
 
-function updateReady() { generate.disabled = !stories.length || !selectedVideo }
+function updateReady() {
+  generate.disabled = creationMode.value === 'automatic' ? !selectedVideo : !stories.length || !selectedVideo
+}
 
 function closeStoryScript() {
   storyScriptModal.hidden = true
@@ -167,10 +169,18 @@ function updateCreationMode() {
   modeHint.textContent = automatic
     ? 'O sistema sorteia a história, divide o texto e prepara todas as partes.'
     : 'Escolha a história, o título e o vídeo. Você revisa antes de montar.'
+  updateReady()
 }
 
 generate.addEventListener('click', async () => {
   generate.disabled = true
+  if (creationMode.value === 'automatic' && !stories.length) {
+    status.textContent = 'Nenhuma história disponível. Execute o script de histórias primeiro.'
+    storyScriptModal.hidden = false
+    scriptTerm.focus()
+    generate.disabled = false
+    return
+  }
   const batchCount = Math.max(1, Number(dailyCount.value) || 1)
   const selected = creationMode.value === 'automatic'
     ? chooseStory()
